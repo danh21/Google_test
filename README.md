@@ -1,6 +1,6 @@
 # 📦 Project Name
 
-> Image filtering in image processing.
+> Google test.
 
 ---
 
@@ -20,15 +20,13 @@
 
 ## 📝 About
 
-> This is a simple tool to filter image by many types.
+> Unit test with Google test using AI Copilot chat.
 
 ---
 
 ## ✨ Features
 
-- ✅ Add noise with density (Gaussian, Poisson, Salt & Pepper, Speckle)
-- ✅ Noise removal filter by size
-- ✅ Enhancement
+- ✅ Build project with Cmake
 
 ---
 
@@ -37,20 +35,19 @@
 ### Prerequisites
 
 - List software dependencies or system requirements here:
-  - MATLAB
+  - VSCode
+  - Cmake
+  - AI Copilot
 
 ### Source
 
-- *.fig: design GUI
-- *.m: main app
+- include/*.hpp: header files
+- lib/*.cpp: main source
 
 ### Usage
 
-- Open file *.m in MATLAB
-- Change folder to location containing source code
-- Run
-- When app window opens, choose image file first
-- Apply custom image filters (fill mandatory parameters) and see results 
+- cmake -B build
+- cmake --build build
 
 ### Reference
 
