@@ -11,5 +11,5 @@ add_executable(mainApp main.cpp)
 target_link_libraries(mainApp commonLibrary)
 
 add_executable(unitTestRunner testRunner.cpp)
-target_link_libraries(unitTestRunner commonLibrary ${GTEST_LIBRARIES} pthread)
+target_link_libraries(unitTestRunner commonLibrary ${GTEST_LIBRARIES} pthread GTest::gtest_main)
 
