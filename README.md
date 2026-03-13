@@ -28,6 +28,7 @@
 
 - ✅ Build project with Cmake
 - ✅ Use Google test for unit test
+- ✅ Demo in WSL / MSVC
 
 ---
 
@@ -37,6 +38,7 @@
 
 - List software dependencies or system requirements here:
   - VSCode
+  - WSL (Linux) / MSVC (Window)
   - Cmake
   - Gtest
   - AI Copilot
@@ -45,8 +47,8 @@
 
 - CmakeLists.txt: config Cmake
 - build/: build system of project
-- *.hpp: header files
-- *.cpp: main source
+- *.hpp, *.h: header files
+- *.cpp: driver source / test source
 
 ### Usage
 
