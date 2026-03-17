@@ -112,15 +112,10 @@ TEST_F(BankSystemTest, SegFault_Easy) {
     //  auto acct = std::make_shared<SavingsAccount>(1, "temp", 1000.0, 0.03, 100.0);
     Account* raw = acct.get();
 
-    /* should reset pointer after use. */
-    // bank.closeAccount(sid1);
-    for (auto acc : bank.getAllAccounts()) {
-        acc.reset();
-    }
     // std::cout << acct.use_count() << std::endl; //2
 
     acct.reset();
-    // raw = nullptr;
+    raw = nullptr;  /* should reset pointer after use. */
 
     // std::cout << acct.use_count() << std::endl; //0
 
