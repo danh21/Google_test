@@ -172,24 +172,28 @@ TEST_F(BankSystemTest, UAF_Mid) {
     const auto& hist_ref = alice->getTransactionHistory();
     const Transaction* first_tx = &hist_ref[0]; 
 
+    // push_back makes 'history' vector reallocate, which makes first_tx (points to old buffer) is wrong
     for (int i = 0; i < 50; ++i) alice->deposit(20.0);
     alice->applyInterest();
     for (int i = 0; i < 20; ++i) ASSERT_TRUE(alice->withdraw(5.0));
 
-    EXPECT_DOUBLE_EQ(first_tx->amount, 1000.0); 
+    EXPECT_DOUBLE_EQ(first_tx->amount, 1000.0);
+    // EXPECT_DOUBLE_EQ(hist_ref[0].amount, 1000.0);    //fix issue
 }
 
-// TEST_F(BankSystemTest, UAF_Hard) {
-//     auto alice = sa(sid1);
-//     const auto& hist_ref = alice->getTransactionHistory();
-//     const Transaction* tx_first = &hist_ref.front();
-//     const Transaction* tx_last  = &hist_ref.back();
+TEST_F(BankSystemTest, UAF_Hard) {
+    auto alice = sa(sid1);
+    const auto& hist_ref = alice->getTransactionHistory();
+    const Transaction* tx_first = &hist_ref.front();
+    const Transaction* tx_last  = &hist_ref.back();
 
-//     for (int i = 0; i < 60; ++i) alice->deposit(10.0);
-//     for (int i = 0; i < 30; ++i) ASSERT_TRUE(alice->withdraw(5.0));
+    // push_back makes 'history' vector reallocate, which makes pointers tx_first and tx_last (points to old buffer) are wrong
+    for (int i = 0; i < 60; ++i) alice->deposit(10.0);
+    for (int i = 0; i < 30; ++i) ASSERT_TRUE(alice->withdraw(5.0));
 
-//     EXPECT_DOUBLE_EQ(tx_first->amount, 1000.0); 
-// }
+    EXPECT_DOUBLE_EQ(tx_first->amount, 1000.0); 
+    // EXPECT_DOUBLE_EQ(hist_ref.front().amount, 1000.0); // fix issue
+}
 
 // // ============================================================================
 // // G03. DATA CORRUPTION (Logical & Calculation Errors)
