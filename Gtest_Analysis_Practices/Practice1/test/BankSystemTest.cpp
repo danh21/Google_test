@@ -195,67 +195,76 @@ TEST_F(BankSystemTest, UAF_Hard) {
     // EXPECT_DOUBLE_EQ(hist_ref.front().amount, 1000.0); // fix issue
 }
 
-// // ============================================================================
-// // G03. DATA CORRUPTION (Logical & Calculation Errors)
-// // ============================================================================
-// TEST_F(BankSystemTest, DataCorrupt_Easy) {
-//     auto alice = bank.findAccount(sid1); 
-//     auto carol = bank.findAccount(cid1); 
-//     ASSERT_TRUE(alice->transfer(200.0, *carol));
+// ============================================================================
+// G03. DATA CORRUPTION (Logical & Calculation Errors)
+// ============================================================================
+TEST_F(BankSystemTest, DataCorrupt_Easy) {
+    auto alice = bank.findAccount(sid1); 
+    auto carol = bank.findAccount(cid1); 
+    ASSERT_TRUE(alice->transfer(200.0, *carol));
 
-//     EXPECT_DOUBLE_EQ(alice->getBalance(), 1200.0); 
-//     EXPECT_DOUBLE_EQ(carol->getBalance(),  300.0); 
-// }
+    EXPECT_DOUBLE_EQ(alice->getBalance(), 1200.0);  //800
+    EXPECT_DOUBLE_EQ(carol->getBalance(),  300.0);  //700
+}
 
-// TEST_F(BankSystemTest, DataCorrupt_Mid) {
-//     auto alice = sa(sid1);
+TEST_F(BankSystemTest, DataCorrupt_Mid) {
+    auto alice = sa(sid1);
 
-//     alice->setInterestRate(5);
+    // setInterestRate(5) ~ 500% 
+    alice->setInterestRate(5);
 
-//     double total_interest = 0.0;
-//     for (int month = 1; month <= 3; ++month) {
-//         total_interest += alice->applyInterest();
-//     }
-//     EXPECT_DOUBLE_EQ(total_interest, 150.0); 
-// }
+    // expect 0.05 ~ 5%.
+    // alice->setInterestRate(0.05);   //fix issue
 
-// TEST_F(BankSystemTest, DataCorrupt_Hard) {
-//     CheckingAccount carol2(10, "Carol2", 300.0, 200.0, 25.0);
-//     carol2.withdraw(50.0); 
+    double total_interest = 0.0;
+    for (int month = 1; month <= 3; ++month) {
+        total_interest += alice->applyInterest();
+    }
 
-//     double deposited = carol2.getTotalDeposited();
-//     double withdrawn = carol2.getTotalWithdrawn();
-//     EXPECT_DOUBLE_EQ(deposited - withdrawn, carol2.getBalance()); 
-// }
+    EXPECT_DOUBLE_EQ(total_interest, 157.63); 
+}
 
-// // ============================================================================
-// // G04. LOGIC BUG (Tester Logic Mistakes)
-// // ============================================================================
-// TEST_F(BankSystemTest, LogicBug_Easy) {
-//     auto carol = ca(cid1); 
-//     ASSERT_TRUE(carol->withdraw(600.0));
+TEST_F(BankSystemTest, DataCorrupt_Hard) {
+    CheckingAccount carol2(10, "Carol2", 300.0, 200.0, 25.0);
+    carol2.withdraw(350.0); // withdraw exceeds balance, causes overdraft -> detect overdraft fee issue
 
-//     EXPECT_DOUBLE_EQ(carol->getBalance(), -100.0); 
-// }
+    double deposited = carol2.getTotalDeposited();
+    double withdrawn = carol2.getTotalWithdrawn();
+    // double overdraft_fee_total = carol2.getOverdraftCount() * carol2.getOverdraftFee();  //fix issue
+    
+    EXPECT_DOUBLE_EQ(deposited - withdrawn, carol2.getBalance()); 
+    // EXPECT_DOUBLE_EQ(deposited - withdrawn - overdraft_fee_total, carol2.getBalance()); //fix issue
+}
 
-// TEST_F(BankSystemTest, LogicBug_Mid) {
-//     auto alice = bank.findAccount(sid1);
+// ============================================================================
+// G04. LOGIC BUG (Tester Logic Mistakes)
+// ============================================================================
+TEST_F(BankSystemTest, LogicBug_Easy) {
+    auto carol = ca(cid1); 
+    ASSERT_TRUE(carol->withdraw(600.0)); // balance 500, fee 20
 
-//     EXPECT_NO_THROW(alice->transfer(100.0, *alice)); 
-// }
+    EXPECT_DOUBLE_EQ(carol->getBalance(), -100.0); //500 - 600 - 20 = -120.0.
+}
 
-// TEST_F(BankSystemTest, LogicBug_Hard) {
-//     auto a = bank.findAccount(sid1); 
-//     auto b = bank.findAccount(sid2); 
-//     auto c = bank.findAccount(cid1); 
-//     a->transfer(200.0, *b); 
-//     b->transfer(300.0, *c); 
-//     c->transfer(100.0, *a);
-//     b->transfer(100.0, *a); 
+TEST_F(BankSystemTest, LogicBug_Mid) {
+    auto alice = bank.findAccount(sid1);
 
-//     EXPECT_DOUBLE_EQ(b->getBalance(), 1600.0); 
-//     EXPECT_DOUBLE_EQ(c->getBalance(), 800.0);  
-// }
+    EXPECT_NO_THROW(alice->transfer(100.0, *alice)); //Account::transfer throws std::invalid_argument if source == target.
+}
+
+TEST_F(BankSystemTest, LogicBug_Hard) {
+    auto a = bank.findAccount(sid1); 
+    auto b = bank.findAccount(sid2); // 2000
+    auto c = bank.findAccount(cid1); // 500
+    a->transfer(200.0, *b); //+200
+    b->transfer(300.0, *c); //-300
+    c->transfer(100.0, *a); 
+    b->transfer(100.0, *a); //-100
+
+    ASSERT_DOUBLE_EQ(b->getBalance(), 1600.0); //2000 + 200 - 300 - 100 = 1800
+    EXPECT_DOUBLE_EQ(c->getBalance(), 800.0);  //500 + 300 - 100 = 700
+    std::cout << "B balance: " << b->getBalance();
+}
 
 // // ============================================================================
 // // G05. BOUNDARY / VALIDATION BUG (Lỗi kiểm tra biên và hợp lệ dữ liệu)

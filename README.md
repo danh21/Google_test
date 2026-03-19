@@ -42,6 +42,7 @@
   - Cmake
   - Gtest
   - AI Copilot
+  - gdb
 
 ### Source
 
@@ -52,9 +53,11 @@
 
 ### Usage
 
+- cd to specific workspace
 - cmake -B build
 - cmake --build build
 - ./build/executableFile
+- Debug by gdb in VSCode (F5). For example: Gtest_Analysis_Practices/
 
 ### Reference
 
